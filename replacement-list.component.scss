@@ -1,0 +1,172 @@
+@use 'sass:color';
+
+$primary: #800000;
+$background: #FFFBF7;
+$surface: #FFFFFF;
+$text-primary: #1A1A1A;
+$text-muted: #6B7280;
+$border-color: #F3EAE4;
+$font-body: 'Poppins', sans-serif;
+
+.replacements-page {
+  min-height: 60vh;
+  background: $background;
+  padding: 2rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: $font-body;
+
+  .page-header {
+    margin-bottom: 1.5rem;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $text-primary;
+      margin: 0 0 0.25rem 0;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: $text-muted;
+      margin: 0;
+    }
+  }
+
+  .state-block {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: $text-muted;
+
+    &.error {
+      color: $primary;
+    }
+
+    .btn-retry,
+    .btn-link {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1.25rem;
+      background: $primary;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      margin: 0 auto 1rem;
+      border: 3px solid $border-color;
+      border-top-color: $primary;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  .request-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .request-card {
+    background: $surface;
+    border: 1px solid $border-color;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+
+    .request-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+
+      .request-order {
+        .label {
+          display: block;
+          font-size: 0.75rem;
+          color: $text-muted;
+          text-transform: uppercase;
+        }
+
+        .value {
+          font-weight: 600;
+          color: $text-primary;
+        }
+      }
+    }
+
+    .request-body {
+      .row {
+        margin: 0.35rem 0;
+        font-size: 0.9rem;
+        color: $text-primary;
+
+        .k {
+          color: $text-muted;
+          margin-right: 0.35rem;
+        }
+
+        &.rejection .v {
+          color: $primary;
+        }
+      }
+    }
+
+    .request-footer {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid $border-color;
+      font-size: 0.8rem;
+      color: $text-muted;
+    }
+  }
+
+  .badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.badge-pending {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    &.badge-approved {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    &.badge-rejected {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+  }
+
+  .chip {
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &.chip-replacement {
+      background: #E0E7FF;
+      color: #3730A3;
+    }
+
+    &.chip-refund {
+      background: #FCE7F3;
+      color: #9D174D;
+    }
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
