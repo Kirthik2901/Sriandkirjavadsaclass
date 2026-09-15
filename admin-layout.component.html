@@ -1,0 +1,240 @@
+<div class="admin-layout" 
+     [class.sidebar-open]="sidebarService.isOpen()" 
+     [class.sidebar-collapsed]="!sidebarService.isOpen() && !sidebarService.isMobile()"
+     [class.is-mobile]="sidebarService.isMobile()">
+  
+  <!-- Mobile Overlay -->
+  <div class="sidebar-overlay" 
+       *ngIf="sidebarService.isOpen() && sidebarService.isMobile()" 
+       (click)="toggleSidebar()">
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-icon" *ngIf="sidebarService.isOpen()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+        </span>
+        <div class="brand-block">
+          <span class="brand-name">Admin Panel</span>
+          <span class="role-pill" *ngIf="sidebarService.isOpen()">{{ roleLabel }}</span>
+        </div>
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()" aria-label="Toggle Sidebar">
+        <svg *ngIf="sidebarService.isOpen()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <svg *ngIf="!sidebarService.isOpen()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Dashboard">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+
+      <a *ngIf="authService.isSuperAdmin()" routerLink="/admin/analytics" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Analytics">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </span>
+        <span class="nav-text">Analytics</span>
+      </a>
+
+      <a routerLink="/admin/products" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Products">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Products</span>
+      </a>
+
+      <a routerLink="/admin/categories" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Categories">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Categories</span>
+      </a>
+
+      <a routerLink="/admin/tags" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Tags">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+        </span>
+        <span class="nav-text">Tags</span>
+      </a>
+
+      <a routerLink="/admin/orders" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Orders">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Orders</span>
+      </a>
+
+      <a routerLink="/admin/replacement-requests" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Replacements">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Replacements</span>
+      </a>
+
+      <a *ngIf="authService.isSuperAdmin()" routerLink="/admin/coupons" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Coupons">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Coupons</span>
+      </a>
+
+      <a routerLink="/admin/banners" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Banners">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </span>
+        <span class="nav-text">Banners</span>
+      </a>
+
+      <a routerLink="/admin/blogs" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Blogs">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Blogs</span>
+      </a>
+      
+      <a *ngIf="authService.isSuperAdmin()" routerLink="/admin/header-offer" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Header Offer">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Header Offer</span>
+      </a>
+
+      <a *ngIf="authService.isSuperAdmin()" routerLink="/admin/users" routerLinkActive="active" 
+         class="nav-item" (click)="closeSidebarOnMobile()" data-tooltip="Users">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Users</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer with Profile Dropdown -->
+    <div class="sidebar-footer">
+      <div class="profile-wrapper" [class.dropdown-open]="profileDropdownOpen">
+        <div class="admin-info" (click)="toggleProfileDropdown()" data-tooltip="Profile">
+          <div class="admin-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="admin-details">
+            <span class="admin-name">{{ adminName }}</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+          <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div class="profile-dropdown">
+          <a routerLink="/" class="dropdown-item" (click)="closeSidebarOnMobile(); closeProfileDropdown()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>View Site</span>
+            <svg class="external-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+          <button class="dropdown-item logout" (click)="logout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle-btn" 
+          *ngIf="sidebarService.isMobile() && !sidebarService.isOpen()" 
+          (click)="toggleSidebar()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

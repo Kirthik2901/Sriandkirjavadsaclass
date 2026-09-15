@@ -1,0 +1,354 @@
+<div class="order-detail-page">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading order details...</p>
+  </div>
+
+  <!-- Order Details Content -->
+  <div *ngIf="!loading() && order()" class="order-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="header-info">
+        <h1 class="page-title">Order Details</h1>
+        <p class="order-meta">
+          Order <span class="order-number">#{{ order().orderNumber }}</span>
+          <span class="separator">|</span>
+          Placed on {{ order().createdAt | date:'MMMM d, y' }}
+        </p>
+      </div>
+      <button class="btn-download" (click)="downloadInvoice()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download Invoice
+      </button>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <main class="main-grid">
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <!-- Order Status Card -->
+        <div class="card status-card">
+          <h2 class="card-title">Order Status</h2>
+          
+          <div class="timeline">
+            <!-- Order Confirmed -->
+            <div class="timeline-item" [class.completed]="order().confirmedAt">
+              <div class="timeline-icon" [class.active]="order().confirmedAt">
+                <svg *ngIf="order().confirmedAt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <svg *ngIf="!order().confirmedAt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <h3>Order Confirmed</h3>
+                <p *ngIf="order().confirmedAt">{{ order().confirmedAt | date:'MMM d, h:mm a' }}</p>
+                <p *ngIf="!order().confirmedAt">Awaiting update</p>
+              </div>
+            </div>
+
+            <!-- Shipped -->
+            <div class="timeline-item" [class.completed]="order().shippedAt">
+              <div class="timeline-icon" [class.active]="order().shippedAt">
+                <svg *ngIf="order().shippedAt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <svg *ngIf="!order().shippedAt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="3" width="15" height="13"/>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/>
+                  <circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <h3>Shipped</h3>
+                <p *ngIf="order().shippedAt">{{ order().shippedAt | date:'MMM d, h:mm a' }}</p>
+                <p *ngIf="order().trackingNumber" class="tracking-info">Tracking: {{ order().trackingNumber }}</p>
+                <p *ngIf="order().shippingProvider" class="tracking-info">Carrier: {{ order().shippingProvider }}</p>
+                <p *ngIf="!order().shippedAt">Awaiting update</p>
+              </div>
+            </div>
+
+            <!-- Delivered -->
+            <div class="timeline-item" [class.completed]="order().deliveredAt">
+              <div class="timeline-icon" [class.active]="order().deliveredAt">
+                <svg *ngIf="order().deliveredAt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <svg *ngIf="!order().deliveredAt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <h3>Delivered</h3>
+                <p *ngIf="order().deliveredAt">{{ order().deliveredAt | date:'MMM d, h:mm a' }}</p>
+                <p *ngIf="!order().deliveredAt">Awaiting update</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Status Badge -->
+          <div class="current-status">
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(order().status)">
+              {{ order().status }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Shipping Address Card -->
+        <div class="card address-card">
+          <h2 class="card-title">Shipping To</h2>
+          <address class="address-content">
+            <p class="recipient-name">{{ order().shippingAddress.fullName }}</p>
+            <p>{{ order().shippingAddress.phone }}</p>
+            <p>{{ order().shippingAddress.addressLine1 }}</p>
+            <p *ngIf="order().shippingAddress.addressLine2">{{ order().shippingAddress.addressLine2 }}</p>
+            <p>{{ order().shippingAddress.city }}, {{ order().shippingAddress.state }} {{ order().shippingAddress.pincode }}, {{ order().shippingAddress.country }}</p>
+          </address>
+        </div>
+
+        <!-- Return Request Card (if exists) -->
+        <div class="card return-card" *ngIf="order().returnRequest?.requested">
+          <h2 class="card-title">Return Request</h2>
+          <div class="return-content">
+            <div class="return-header">
+              <span class="return-badge" [ngClass]="getReturnStatusBadgeClass(order().returnRequest.status)">
+                {{ order().returnRequest.status }}
+              </span>
+            </div>
+            <p class="return-date">Requested on {{ order().returnRequest.requestedAt | date:'medium' }}</p>
+            <p class="return-reason"><strong>Reason:</strong> {{ order().returnRequest.reason }}</p>
+            <p *ngIf="order().returnRequest.refundAmount" class="refund-amount">
+              <strong>Refund Amount:</strong> ₹{{ order().returnRequest.refundAmount }}
+            </p>
+            <p *ngIf="order().returnRequest.approvedAt" class="return-approved">
+              ✓ Approved on {{ order().returnRequest.approvedAt | date:'medium' }}
+            </p>
+            <p *ngIf="order().returnRequest.rejectedAt" class="return-rejected">
+              ✗ Rejected on {{ order().returnRequest.rejectedAt | date:'medium' }}
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <section class="main-content">
+        <!-- Order Items Card -->
+        <div class="card items-card">
+          <h2 class="card-title">Items Ordered ({{ order().items.length }})</h2>
+          
+          <div class="items-list">
+            <div *ngFor="let item of order().items" class="order-item">
+              <img [src]="item.image" [alt]="item.name" class="item-image" />
+              <div class="item-details">
+                <h3 class="item-name">{{ item.name }}</h3>
+                <p *ngIf="item.variant" class="item-variant">{{ item.variant }}</p>
+                <p class="item-quantity">₹{{ item.sellingPrice }} × {{ item.quantity }}</p>
+              </div>
+              <p class="item-total">₹{{ item.totalPrice }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Summary Card -->
+        <div class="card payment-card">
+          <h2 class="card-title">Payment Summary</h2>
+          
+          <div class="payment-breakdown">
+            <div class="payment-row">
+              <span>Subtotal</span>
+              <span>₹{{ order().subtotal }}</span>
+            </div>
+            <div class="payment-row">
+              <span>Shipping</span>
+              <span>₹{{ order().shippingCost }}</span>
+            </div>
+            <div class="payment-row discount" *ngIf="order().discount > 0">
+              <span>Discount</span>
+              <span>-₹{{ order().discount }}</span>
+            </div>
+            
+            <div class="payment-divider"></div>
+            
+            <div class="payment-row total">
+              <span>Grand Total</span>
+              <span class="total-amount">₹{{ order().totalAmount }}</span>
+            </div>
+          </div>
+
+          <div class="payment-info">
+            <div class="payment-method-row">
+              <span class="label">Method:</span>
+              <span class="value">{{ order().paymentMethod === 'razorpay' ? 'Online Payment' : 'Cash on Delivery' }}</span>
+            </div>
+            <div class="payment-method-row">
+              <span class="label">Status:</span>
+              <span class="payment-status-badge" [class.paid]="order().paymentStatus === 'paid'">
+                {{ order().paymentStatus }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Return Request Section -->
+        <div class="card return-action-card" *ngIf="canRequestReturn() && !showReturnForm()">
+          <div class="return-action-content">
+            <div class="return-info">
+              <h3>Need to return this order?</h3>
+              <p>You can request a return within 7 days of delivery.</p>
+            </div>
+            <button class="btn-return" (click)="showReturnForm.set(true)">
+              Request Return
+            </button>
+          </div>
+        </div>
+
+        <!-- Return Form -->
+        <div class="card return-form-card" *ngIf="showReturnForm()">
+          <h2 class="card-title">Request Return</h2>
+          
+          <form [formGroup]="returnForm" (ngSubmit)="submitReturn()">
+            <div class="form-group">
+              <label for="reason">Reason for Return <span class="required">*</span></label>
+              <textarea 
+                id="reason" 
+                formControlName="reason" 
+                rows="4"
+                placeholder="Please provide a detailed reason for the return..."
+                class="form-textarea"
+              ></textarea>
+              <small class="hint">Minimum 10 characters</small>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" (click)="showReturnForm.set(false)" [disabled]="submitting()">
+                Cancel
+              </button>
+              <button type="submit" class="btn-submit" [disabled]="submitting()">
+                {{ submitting() ? 'Submitting...' : 'Submit Return Request' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Replacement Request Entry -->
+        <div class="card replacement-action-card" *ngIf="order().status === 'delivered' && !showReplacementForm()">
+          <div class="replacement-action-content">
+            <div class="replacement-info">
+              <h3>Received a faulty or wrong product?</h3>
+              <p>Request a replacement within 3 days of delivery.</p>
+            </div>
+            <button
+              class="btn-replacement"
+              *ngIf="canRequestReplacement()"
+              (click)="openReplacementForm()">
+              Request Replacement
+            </button>
+            <button
+              class="btn-replacement"
+              *ngIf="!canRequestReplacement()"
+              disabled
+              title="Replacement window has expired">
+              Request Replacement
+            </button>
+          </div>
+        </div>
+
+        <!-- Replacement Form -->
+        <div class="card replacement-form-card" *ngIf="showReplacementForm()">
+          <h2 class="card-title">Request Replacement</h2>
+
+          <form [formGroup]="replacementForm" (ngSubmit)="submitReplacement()">
+            <div class="form-group">
+              <label for="repReason">Reason <span class="required">*</span></label>
+              <select id="repReason" formControlName="reason" class="form-select">
+                <option value="" disabled>Select a reason</option>
+                <option *ngFor="let opt of reasonOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+              <small
+                class="error-text"
+                *ngIf="replacementForm.get('reason')?.touched && replacementForm.get('reason')?.invalid">
+                Please select a reason
+              </small>
+            </div>
+
+            <div class="form-group" *ngIf="replacementForm.get('reason')?.value === 'OTHER'">
+              <label for="repReasonText">Reason details <span class="required">*</span></label>
+              <textarea
+                id="repReasonText"
+                formControlName="reasonText"
+                rows="3"
+                placeholder="Please describe the issue..."
+                class="form-textarea">
+              </textarea>
+              <small
+                class="error-text"
+                *ngIf="replacementForm.get('reasonText')?.touched && replacementForm.get('reasonText')?.invalid">
+                reasonText is required when reason is OTHER
+              </small>
+            </div>
+
+            <!-- Photos -->
+            <div class="form-group">
+              <label>Photos <span class="optional">(optional)</span></label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                (change)="onPhotosSelected($event)"
+                [disabled]="uploadingPhotos()"
+                class="form-file" />
+              <small class="hint" *ngIf="uploadingPhotos()">Uploading photos...</small>
+
+              <div class="photo-previews" *ngIf="replacementPhotos().length">
+                <div class="photo-thumb" *ngFor="let photo of replacementPhotos()">
+                  <img [src]="photo.url" alt="Replacement evidence" />
+                  <button type="button" class="remove-thumb" (click)="removePhoto(photo.fileId)" aria-label="Remove photo">×</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video -->
+            <div class="form-group">
+              <label for="repVideo">Evidence video <span class="optional">(optional, max 50MB)</span></label>
+              <input
+                id="repVideo"
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                (change)="onVideoSelected($event)"
+                class="form-file" />
+              <div class="video-selected" *ngIf="selectedVideo()">
+                <span>{{ selectedVideo()!.name }}</span>
+                <button type="button" class="remove-video" (click)="removeVideo()">Remove</button>
+              </div>
+              <small class="hint">Allowed: mp4, webm, mov</small>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-cancel"
+                (click)="cancelReplacementForm()"
+                [disabled]="replacementSubmitting()">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn-submit"
+                [disabled]="replacementSubmitting() || uploadingPhotos()">
+                {{ replacementSubmitting() ? 'Submitting...' : 'Submit Replacement Request' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

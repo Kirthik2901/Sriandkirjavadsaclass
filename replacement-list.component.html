@@ -1,0 +1,62 @@
+<div class="replacements-page">
+  <header class="page-header">
+    <h1>My Replacement Requests</h1>
+    <p>Track the status of your product replacement and refund requests.</p>
+  </header>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="state-block">
+    <div class="spinner"></div>
+    <p>Loading your requests...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading() && error()" class="state-block error">
+    <p>{{ error() }}</p>
+    <button class="btn-retry" (click)="load()">Retry</button>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && !error() && requests().length === 0" class="state-block empty">
+    <p>You haven't raised any replacement requests yet.</p>
+    <a routerLink="/orders" class="btn-link">View my orders</a>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="!loading() && !error() && requests().length > 0" class="request-list">
+    <div class="request-card" *ngFor="let req of requests()">
+      <div class="request-top">
+        <div class="request-order">
+          <span class="label">Order</span>
+          <span class="value" *ngIf="orderOf(req)">#{{ orderOf(req).orderNumber }}</span>
+        </div>
+        <span class="badge" [ngClass]="statusClass(req.status)">{{ req.status }}</span>
+      </div>
+
+      <div class="request-body">
+        <p class="row"><span class="k">Reason:</span> <span class="v">{{ req.reason }}</span></p>
+        <p class="row" *ngIf="req.reasonText"><span class="k">Details:</span> <span class="v">{{ req.reasonText }}</span></p>
+        <p class="row" *ngIf="orderOf(req)?.totalAmount != null">
+          <span class="k">Order total:</span> <span class="v">₹{{ orderOf(req).totalAmount }}</span>
+        </p>
+
+        <p class="row" *ngIf="req.resolution">
+          <span class="k">Resolution:</span>
+          <span class="chip" [ngClass]="'chip-' + req.resolution.toLowerCase()">{{ req.resolution }}</span>
+        </p>
+
+        <p class="row" *ngIf="req.refund?.status">
+          <span class="k">Refund status:</span> <span class="v">{{ req.refund?.status }}</span>
+        </p>
+
+        <p class="row rejection" *ngIf="req.status === 'REJECTED' && req.rejectionReason">
+          <span class="k">Rejection reason:</span> <span class="v">{{ req.rejectionReason }}</span>
+        </p>
+      </div>
+
+      <div class="request-footer" *ngIf="req.createdAt">
+        Requested on {{ req.createdAt | date:'medium' }}
+      </div>
+    </div>
+  </div>
+</div>
