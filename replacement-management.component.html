@@ -1,0 +1,219 @@
+<div class="replacement-admin">
+  <header class="page-header">
+    <div>
+      <h1>Replacement Requests</h1>
+      <p>Review, approve, or reject customer product replacement and refund requests.</p>
+    </div>
+    <div class="filter">
+      <label for="statusFilter">Status</label>
+      <select
+        id="statusFilter"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onFilterChange($event)">
+        <option *ngFor="let s of statuses" [ngValue]="s">{{ s || 'All' }}</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="state-block">
+    <div class="spinner"></div>
+    <p>Loading requests...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading() && error()" class="state-block error">
+    <p>{{ error() }}</p>
+    <button class="btn" (click)="loadList()">Retry</button>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && !error() && requests().length === 0" class="state-block">
+    <p>No replacement requests found.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading() && !error() && requests().length > 0" class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Resolution</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of requests()">
+          <td>{{ req.createdAt | date:'MMM d, y' }}</td>
+          <td>{{ orderOf(req)?.orderNumber || '—' }}</td>
+          <td>
+            <div class="cust">
+              <span class="cust-name">{{ userOf(req)?.username || '—' }}</span>
+              <span class="cust-email">{{ userOf(req)?.email }}</span>
+            </div>
+          </td>
+          <td>{{ req.reason }}</td>
+          <td><span class="badge" [ngClass]="statusClass(req.status)">{{ req.status }}</span></td>
+          <td>{{ req.resolution || '—' }}</td>
+          <td><button class="btn-view" (click)="openDetail(req)">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="pagination().totalPages > 1">
+      <button class="page-btn" [disabled]="page() === 1" (click)="goToPage(page() - 1)">Prev</button>
+      <button
+        *ngFor="let p of pageNumbers()"
+        class="page-btn"
+        [class.active]="p === page()"
+        (click)="goToPage(p)">
+        {{ p }}
+      </button>
+      <button class="page-btn" [disabled]="page() === pagination().totalPages" (click)="goToPage(page() + 1)">Next</button>
+    </div>
+    <p class="total-count">{{ pagination().totalRequests }} total request(s)</p>
+  </div>
+
+  <!-- Detail Drawer -->
+  <div class="drawer-overlay" *ngIf="selected()" (click)="closeDetail()"></div>
+  <aside class="drawer" *ngIf="selected() as req">
+    <div class="drawer-header">
+      <h2>Request Details</h2>
+      <button class="close-btn" (click)="closeDetail()" aria-label="Close">×</button>
+    </div>
+
+    <div *ngIf="detailLoading()" class="state-block">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <div class="drawer-body" *ngIf="!detailLoading()">
+      <!-- Summary -->
+      <section class="section">
+        <div class="row"><span class="k">Status</span><span class="badge" [ngClass]="statusClass(req.status)">{{ req.status }}</span></div>
+        <div class="row"><span class="k">Order #</span><span class="v">{{ orderOf(req)?.orderNumber || '—' }}</span></div>
+        <div class="row"><span class="k">Customer</span><span class="v">{{ userOf(req)?.username }} ({{ userOf(req)?.email }})</span></div>
+        <div class="row" *ngIf="productOf(req)"><span class="k">Product</span><span class="v">{{ productOf(req)?.name }}</span></div>
+        <div class="row"><span class="k">Reason</span><span class="v">{{ req.reason }}</span></div>
+        <div class="row" *ngIf="req.reasonText"><span class="k">Details</span><span class="v">{{ req.reasonText }}</span></div>
+        <div class="row" *ngIf="req.resolution"><span class="k">Resolution</span><span class="v">{{ req.resolution }}</span></div>
+      </section>
+
+      <!-- Photos -->
+      <section class="section" *ngIf="req.photos?.length">
+        <h3>Photos</h3>
+        <div class="photo-grid">
+          <a *ngFor="let photo of req.photos" [href]="photo.url" target="_blank" rel="noopener">
+            <img [src]="photo.url" alt="Evidence photo" />
+          </a>
+        </div>
+      </section>
+
+      <!-- Video -->
+      <section class="section">
+        <h3>Evidence Video</h3>
+        <p class="warn">This video can be downloaded only once.</p>
+        <button
+          class="btn"
+          [disabled]="videoDownloading() || videoDownloaded() || videoUnavailable()"
+          (click)="downloadVideo()">
+          <span *ngIf="videoDownloading()">Downloading...</span>
+          <span *ngIf="!videoDownloading() && videoUnavailable()">No video available</span>
+          <span *ngIf="!videoDownloading() && !videoUnavailable() && videoDownloaded()">Already downloaded</span>
+          <span *ngIf="!videoDownloading() && !videoUnavailable() && !videoDownloaded()">Download video</span>
+        </button>
+      </section>
+
+      <!-- Refund block -->
+      <section class="section" *ngIf="req.refund?.method || req.refund?.status">
+        <h3>Refund</h3>
+        <div class="row" *ngIf="req.refund?.method"><span class="k">Method</span><span class="v">{{ req.refund?.method }}</span></div>
+        <div class="row" *ngIf="req.refund?.status"><span class="k">Status</span><span class="v">{{ req.refund?.status }}</span></div>
+        <div class="row" *ngIf="req.refund?.amount != null"><span class="k">Amount</span><span class="v">₹{{ req.refund?.amount }}</span></div>
+
+        <!-- Reveal UPI (manual refunds only) -->
+        <div class="reveal-upi" *ngIf="canRevealUpi">
+          <button class="btn-outline" *ngIf="!revealedUpi()" [disabled]="revealingUpi()" (click)="revealUpi()">
+            {{ revealingUpi() ? 'Revealing...' : 'Reveal UPI' }}
+          </button>
+          <div class="upi-field" *ngIf="revealedUpi()">
+            <input type="text" [value]="maskUpi(revealedUpi())" readonly />
+            <button class="btn-outline" (click)="copyUpi()">Copy</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reverse pickup -->
+      <section class="section" *ngIf="req.reversePickup?.scheduled">
+        <h3>Reverse Pickup</h3>
+        <div class="row" *ngIf="req.reversePickup?.provider"><span class="k">Provider</span><span class="v">{{ req.reversePickup?.provider }}</span></div>
+        <div class="row" *ngIf="req.reversePickup?.trackingNumber"><span class="k">Tracking</span><span class="v">{{ req.reversePickup?.trackingNumber }}</span></div>
+        <div class="row" *ngIf="req.reversePickup?.scheduledAt"><span class="k">Scheduled</span><span class="v">{{ req.reversePickup?.scheduledAt | date:'medium' }}</span></div>
+      </section>
+
+      <!-- Rejection -->
+      <section class="section" *ngIf="req.status === 'REJECTED' && req.rejectionReason">
+        <h3>Rejection Reason</h3>
+        <p>{{ req.rejectionReason }}</p>
+      </section>
+
+      <!-- Actions -->
+      <section class="section actions" *ngIf="req.status === 'PENDING'">
+        <button class="btn approve" (click)="openApproveDialog()">Approve</button>
+        <button class="btn reject" (click)="openRejectDialog()">Reject</button>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Approve Dialog -->
+  <div class="modal-overlay" *ngIf="showApproveDialog()">
+    <div class="modal">
+      <h3>Approve Request</h3>
+      <p class="modal-desc">
+        The system will create a replacement if stock is available, otherwise process a refund.
+      </p>
+      <label for="upiId">UPI id</label>
+      <input
+        id="upiId"
+        type="text"
+        [(ngModel)]="approveUpiId"
+        [class.required-field]="approveUpiRequired()"
+        placeholder="name@bank" />
+      <small class="hint" [class.error]="approveUpiRequired()">
+        {{ approveUpiRequired()
+          ? 'UPI id is required to refund this COD order.'
+          : 'Required only if this is a COD order that must be refunded.' }}
+      </small>
+      <div class="modal-actions">
+        <button class="btn-ghost" (click)="closeApproveDialog()" [disabled]="approveSubmitting()">Cancel</button>
+        <button class="btn approve" (click)="confirmApprove()" [disabled]="approveSubmitting()">
+          {{ approveSubmitting() ? 'Approving...' : 'Confirm Approve' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Dialog -->
+  <div class="modal-overlay" *ngIf="showRejectDialog()">
+    <div class="modal">
+      <h3>Reject Request</h3>
+      <label for="rejectReason">Rejection reason <span class="req">*</span></label>
+      <textarea
+        id="rejectReason"
+        rows="3"
+        [(ngModel)]="rejectReason"
+        placeholder="Explain why this request is rejected..."></textarea>
+      <div class="modal-actions">
+        <button class="btn-ghost" (click)="closeRejectDialog()" [disabled]="rejectSubmitting()">Cancel</button>
+        <button class="btn reject" (click)="confirmReject()" [disabled]="rejectSubmitting()">
+          {{ rejectSubmitting() ? 'Rejecting...' : 'Confirm Reject' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
